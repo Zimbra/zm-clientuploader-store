@@ -172,31 +172,57 @@ ZaDashBoardController.prototype.editButtonListener = function(ev) {
 
 ZaDashBoardController.prototype.editItem = function (item) {
 	var type = item.type;
+	//check if the item already open in a tab
+	var itemId = item.id ;
+	if((item.type == ZaItem.ALIAS) && item.attrs && item.attrs[ZaAlias.A_AliasTargetId]) {
+		itemId = item.attrs[ZaAlias.A_AliasTargetId];
+	}
+	var type = item.type;
+	var viewContstructor = ZaAccountXFormView;
 	if (type == ZaItem.ACCOUNT) {
-		ZaApp.getInstance().getAccountViewController().show(item);
+		viewContstructor = ZaAccountXFormView;	
 	} else if (type == ZaItem.DL) {
-		ZaApp.getInstance().getDistributionListController().show(item);
-	} else if(type == ZaItem.ALIAS) {
-		var targetObj = item.getAliasTargetObj() ;
-		
-		if (item.attrs[ZaAlias.A_targetType] == ZaAlias.TARGET_TYPE_ACCOUNT) {			
-			ZaApp.getInstance().getAccountViewController().show(targetObj, true);
-		} else if (item.attrs[ZaAlias.A_targetType] == ZaAlias.TARGET_TYPE_DL){
-			ZaApp.getInstance().getDistributionListController().show(targetObj, true);
-		}  else if (item.attrs[ZaAlias.A_targetType] == ZaAlias.RESOURCE){
-			ZaApp.getInstance().getResourceController().show(targetObj, true);
-		}
+		viewContstructor = ZaDLXFormView;	
 	} else if (type == ZaItem.RESOURCE ){
-		ZaApp.getInstance().getResourceController().show(item);
-	} else if (type==ZaItem.DOMAIN) {
-		ZaApp.getInstance().getDomainController().show(item);
-	} else if (type==ZaItem.COS) {
-		ZaApp.getInstance().getCosController().show(item);
+		viewContstructor = ZaResourceXFormView;
+	} else if (type == ZaItem.ALIAS) {
+		if (item.attrs[ZaAlias.A_targetType] == ZaAlias.TARGET_TYPE_ACCOUNT) {	
+			viewController = ZaAccountXFormView;
+		}else if (item.attrs[ZaAlias.A_targetType] == ZaAlias.TARGET_TYPE_DL){
+		    viewController = ZaDLXFormView;
+		}
+	}
+	if (! this.selectExistingTabByItemId(itemId,viewContstructor)){
+		if (type == ZaItem.ACCOUNT) {
+			ZaApp.getInstance().getAccountViewController().show(item,true);
+		} else if (type == ZaItem.DL) {
+			ZaApp.getInstance().getDistributionListController().show(item,true);
+		} else if(type == ZaItem.ALIAS) {
+			var targetObj = item.getAliasTargetObj() ;
+			
+			if (item.attrs[ZaAlias.A_targetType] == ZaAlias.TARGET_TYPE_ACCOUNT) {			
+				ZaApp.getInstance().getAccountViewController().show(targetObj, true);
+			} else if (item.attrs[ZaAlias.A_targetType] == ZaAlias.TARGET_TYPE_DL){
+				ZaApp.getInstance().getDistributionListController().show(targetObj, true);
+			}  else if (item.attrs[ZaAlias.A_targetType] == ZaAlias.RESOURCE){
+				ZaApp.getInstance().getResourceController().show(targetObj, true);
+			}
+		} else if (type == ZaItem.RESOURCE ){
+			ZaApp.getInstance().getResourceController().show(item,true);
+		} else if (type==ZaItem.DOMAIN) {
+			ZaApp.getInstance().getDomainController().show(item.true);
+		} else if (type==ZaItem.COS) {
+			ZaApp.getInstance().getCosController().show(item,true);
+		}
 	}
 };
 
 ZaDashBoardController.prototype.openSettingsView = function () {
-	ZaApp.getInstance().getApplianceSettingsController().show(ZaApp.getInstance().getGlobalConfig());
+	var item = ZaApp.getInstance().getGlobalConfig();
+	item.id = ZaItem.GLOBAL_CONFIG;
+	if (! this.selectExistingTabByItemId(ZaItem.GLOBAL_CONFIG,ZaApplianceSettingsView)){
+		ZaApp.getInstance().getApplianceSettingsController().show(item);
+	}
 };
 
 ZaDashBoardController.prototype.openBulkProvisionDialog = function () {

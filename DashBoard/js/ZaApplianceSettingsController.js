@@ -37,18 +37,10 @@ ZaController.initToolbarMethods["ZaApplianceSettingsController"] = new Array();
 ZaController.setViewMethods["ZaApplianceSettingsController"] = [];
 ZaController.changeActionsStateMethods["ZaApplianceSettingsController"] = [];
 
-ZaApp.prototype.getApplianceSettingsController =
-	function(viewId) {
-		if(!viewId)
-			viewId = ZaZimbraAdmin._GLOBAL_SETTINGS;
-		
-		if (viewId && this._controllers[viewId] != null) {
-			return this._controllers[viewId];
-		}else{
-			var c  = this._controllers[viewId] = new ZaApplianceSettingsController(this._appCtxt, this._container, this);
-			return c ;
-		}
-	}
+ZaApp.prototype.getApplianceSettingsController = function() {
+	var c  = new ZaApplianceSettingsController(this._appCtxt, this._container, this);
+	return c ;
+}
 
 /**
 * Adds listener to removal of an ZaDomain 
@@ -59,9 +51,8 @@ function(listener) {
 	this._evtMgr.addListener(ZaEvent.E_MODIFY, listener);
 }
 
-ZaApplianceSettingsController.prototype.show = 
-function(item, openInNewTab) {
-	this._setView(item, false);
+ZaApplianceSettingsController.prototype.show = function(entry, openInNewTab, skipRefresh) {
+	this._setView(entry, openInNewTab, skipRefresh);
 }
 
 ZaApplianceSettingsController.initToolbarMethod =
@@ -76,33 +67,29 @@ ZaController.initToolbarMethods["ZaApplianceSettingsController"].push(ZaApplianc
 
 ZaApplianceSettingsController.setViewMethod = function (item) {
     try {
-	    if ( !this._UICreated || (this._view == null) || (this._toolbar == null)) {
-            this._initToolbar();
-            this._toolbarOperations[ZaOperation.NONE] = new ZaOperation(ZaOperation.NONE);
-            this._toolbarOperations[ZaOperation.HELP] = new ZaOperation(ZaOperation.HELP, ZaMsg.TBB_Help, ZaMsg.TBB_Help_tt, "Help", "Help", new AjxListener(this, this._helpButtonListener));
-            this._toolbarOrder.push(ZaOperation.NONE);
-            this._toolbarOrder.push(ZaOperation.HELP);
-            this._toolbar = new ZaToolBar(this._container, this._toolbarOperations, this._toolbarOrder);
-            this._contentView = this._view = new this.tabConstructor(this._container,item);
-            var elements = new Object();
-            elements[ZaAppViewMgr.C_APP_CONTENT] = this._view;
-            elements[ZaAppViewMgr.C_TOOLBAR_TOP] = this._toolbar;
-            var tabParams = {
-                openInNewTab: true,
-                tabId: this.getContentViewId(),
-                tab: this.getContentViewId()
-            }
-            ZaApp.getInstance().createView(this.getContentViewId(), elements, tabParams) ;
-            this._UICreated = true;
-            ZaApp.getInstance()._controllers[this.getContentViewId ()] = this ;
+    	this._initToolbar();
+    	this._toolbarOperations[ZaOperation.NONE] = new ZaOperation(ZaOperation.NONE);
+        this._toolbarOperations[ZaOperation.HELP] = new ZaOperation(ZaOperation.HELP, ZaMsg.TBB_Help, ZaMsg.TBB_Help_tt, "Help", "Help", new AjxListener(this, this._helpButtonListener));
+        this._toolbarOrder.push(ZaOperation.NONE);
+        this._toolbarOrder.push(ZaOperation.HELP);
+        this._toolbar = new ZaToolBar(this._container, this._toolbarOperations, this._toolbarOrder);
+        this._contentView = this._view = new this.tabConstructor(this._container,item);
+        var elements = new Object();
+        elements[ZaAppViewMgr.C_APP_CONTENT] = this._view;
+        elements[ZaAppViewMgr.C_TOOLBAR_TOP] = this._toolbar;
+        var tabParams = {
+            openInNewTab: true,
+            tabId: this.getContentViewId()
         }
-		//ZaApp.getInstance().pushView(ZaZimbraAdmin._GLOBAL_SETTINGS);
-		ZaApp.getInstance().pushView(this.getContentViewId());
-		item.load();
-	
-		item[ZaModel.currentTab] = "1"
-		this._view.setDirty(false);
-		this._view.setObject(item);
+        ZaApp.getInstance().createView(this.getContentViewId(), elements, tabParams) ;
+        ZaApp.getInstance()._controllers[this.getContentViewId ()] = this ;
+        ZaApp.getInstance().pushView(this.getContentViewId());
+        item.load();
+
+        item[ZaModel.currentTab] = "1"
+        item.id = ZaItem.GLOBAL_CONFIG;
+        this._view.setDirty(false);
+        this._view.setObject(item);
 	} catch (ex) {
 		this._handleException(ex, "ZaApplianceSettingsController.prototype.show", null, false);
 	}
