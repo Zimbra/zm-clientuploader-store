@@ -260,6 +260,61 @@ ZaDashBoardController.prototype.newProfileSelected = function() {
 	ZaApp.getInstance().getCosController().show(newCos);
 }
 
+ZaDashBoardController.prototype.newDomainSelected = function () {
+	try {
+		var domain = new ZaDomain();			
+		domain.loadNewObjectDefaults();
+		domain.attrs[ZaDomain.A_GALSyncUseGALSearch]="TRUE";
+		domain[ZaDomain.A2_new_internal_gal_polling_interval] = "2d";
+		domain[ZaDomain.A2_new_external_gal_polling_interval] = "2d";
+		domain.attrs[ZaDomain.A_zimbraGalMaxResults] = 100;
+//		domain[ZaDomain.A_CreateNotebook]="TRUE";
+		
+		this._newDomainWizard = ZaApp.getInstance().dialogs["newDomainWizard"] = new ZaApplianceDomainXWizard(this._container, domain);	
+		this._newDomainWizard.registerCallback(DwtWizardDialog.FINISH_BUTTON, this.finishNewDomainButtonListener, this, null);			
+		this._newDomainWizard.setObject(domain);
+		this._newDomainWizard.popup();
+	} catch (ex) {
+		this._handleException(ex, "ZaDashBoardController.prototype.newDomainSelected", null, false);
+	}
+
+}
+
+ZaDashBoardController.prototype.finishNewDomainButtonListener = function() {
+	try {
+		this._newDomainWizard.getButton(ZaXWizardDialog.FINISH_BUTTON).setEnabled(false);
+		this._newDomainWizard.popdown();
+		var obj = this._newDomainWizard.getObject();		
+		var domain = ZaItem.create(obj,ZaDomain,"ZaDomain");
+		if(domain != null) {			
+			//if creation took place - fire an DomainChangeEvent
+			//this._fireDomainCreationEvent(domain);
+			if(this._newDomainWizard.getObject()[ZaDomain.A_CreateNotebook]=="TRUE") {
+				var params = new Object();
+				params.obj = obj;
+				var callback = new AjxCallback(this, this.initNotebookCallback, params);				
+				ZaDomain.initNotebook(obj,callback, this) ;
+			}			
+			this.popupMsgDialog(AjxMessageFormat.format(com_zimbra_dashboard.DomainCreated,[domain.attrs[ZaDomain.A_domainName]]));
+			//var evt = new ZaEvent(ZaEvent.S_DOMAIN);
+			//evt.set(ZaEvent.E_CREATE, this);
+			//evt.setDetails(domain);
+			//this.handleCreation(evt);
+		} else {
+			this._newDomainWizard.getButton(ZaXWizardDialog.FINISH_BUTTON).setEnabled(true);
+			this._newDomainWizard.popup();
+		}
+	} catch (ex) {
+		this._newDomainWizard.popup();
+		this._newDomainWizard.getButton(ZaXWizardDialog.FINISH_BUTTON).setEnabled(true);
+		if(ex.code == ZmCsfeException.DOMAIN_EXISTS) {
+			this.popupErrorDialog(ZaMsg.ERROR_DOMAIN_EXISTS, ex);
+		} else {
+			this._handleException(ex, "ZaDomainListController.prototype.finishNewDomainButtonListener", null, false);
+		}
+	}
+	return;
+}
 
 ZaDashBoardController.prototype.newAccSelected = function() {
 	try {
