@@ -79,7 +79,7 @@ function () {
     this._toolbarOperations[ZaOperation.VIEW_MAIL]=new ZaOperation(ZaOperation.VIEW_MAIL,ZaMsg.ACTBB_ViewMail, ZaMsg.ACTBB_ViewMail_tt, "ReadMailbox", "ReadMailbox", new AjxListener(this, this.viewMailListener));
     this._toolbarOrder.push(ZaOperation.VIEW_MAIL);
     this._toolbarOrder.push(ZaOperation.SEP);
-	this._toolbarOperations[ZaOperation.MANAGE_SETITNGS] = new ZaOperation(ZaOperation.MANAGE_PROFILES, com_zimbra_dashboard.ServerSettings, com_zimbra_dashboard.ServerSettings_tt, "GlobalSettings", "GlobalSettings", new AjxListener(this, ZaAccountListController.prototype._editButtonListener));
+	this._toolbarOperations[ZaOperation.MANAGE_SETITNGS] = new ZaOperation(ZaOperation.MANAGE_PROFILES, com_zimbra_dashboard.ServerSettings, com_zimbra_dashboard.ServerSettings_tt, "GlobalSettings", "GlobalSettings", new AjxListener(this, this.openSettingsView));
 	this._toolbarOrder.push(ZaOperation.MANAGE_SETITNGS);
     this._toolbarOperations[ZaOperation.NONE] = new ZaOperation(ZaOperation.NONE);	
 	this._toolbarOrder.push(ZaOperation.NONE);
@@ -193,6 +193,10 @@ ZaDashBoardController.prototype.editItem = function (item) {
 	} else if (type==ZaItem.COS) {
 		ZaApp.getInstance().getCosController().show(item);
 	}
+};
+
+ZaDashBoardController.prototype.openSettingsView = function () {
+	ZaApp.getInstance().getApplianceSettingsController().show(ZaApp.getInstance().getGlobalConfig());
 };
 
 ZaDashBoardController.prototype.openBulkProvisionDialog = function () {
