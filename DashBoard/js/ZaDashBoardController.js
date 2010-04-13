@@ -384,7 +384,7 @@ ZaDashBoardController.prototype.deleteButtonListener = function(ev) {
 	
 };
 
-ZaDashBoardController.prototype._chngPwdListener = function(ev) {
+ZaDashBoardController.prototype.chngPwdListener = function(ev) {
 	var form = this._contentView._localXForm;
 	var listItems = form.getItemsById("dashBoardSearchResults");
 	var listWidget = null;
