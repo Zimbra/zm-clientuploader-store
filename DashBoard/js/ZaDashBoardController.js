@@ -68,8 +68,11 @@ ZaDashBoardController.hijackMessages = function () {
 	ZaMsg.FAILED_CREATE_COS = com_zimbra_dashboard.FAILED_CREATE_COS;
 	ZaMsg.FAILED_SAVE_COS = com_zimbra_dashboard.FAILED_SAVE_COS;
 	ZaMsg.ERROR_NO_SUCH_COS = com_zimbra_dashboard.ERROR_NO_SUCH_COS;
+	ZaMsg.Domain_Chameleon_Note = com_zimbra_dashboard.Domain_Chameleon_Note;
 	ZaMsg.tt_StartTypingCOSName = com_zimbra_dashboard.tt_StartTypingCOSName;
-    ZaMsg.Domain_Chameleon_Note = com_zimbra_dashboard.Domain_Chameleon_Note;
+	/**
+	 * Help links
+	 */
 	ZaNewAccountXWizard.helpURL = location.pathname + ZaUtil.HELP_URL + "administration_console_help.htm#appliance/zap_provisioning_a_new_account.htm?locid="+AjxEnv.DEFAULT_LOCALE;
 	/**
 	 * hack to deprecate notebook/wiki UI
@@ -116,7 +119,8 @@ ZaDashBoardController.hijackMessages = function () {
 
 ZaDashBoardController.initDomainToolbarMethod = function() {
    	this._toolbarOperations[ZaOperation.FLUSH_CACHE]=new ZaOperation(ZaOperation.FLUSH_CACHE,com_zimbra_dashboard.TBB_FlushCache, com_zimbra_dashboard.TBB_FlushCache_tt, "FlushCache", "FlushCache", new AjxListener(this, ZaDashBoardController.flushThemeCacheListener));
-	this._toolbarOrder = [];
+   	this._toolbarOperations[ZaOperation.GAL_WIZARD]=new ZaOperation(ZaOperation.GAL_WIZARD,ZaMsg.DTBB_GAlConfigWiz, ZaMsg.DTBB_GAlConfigWiz_tt, "GALWizard", "GALWizardDis", new AjxListener(this, ZaDashBoardController.galWizButtonListener));
+   	this._toolbarOrder = [];
 	this._toolbarOrder.push(ZaOperation.SAVE);
 	this._toolbarOrder.push(ZaOperation.CLOSE);
 	this._toolbarOrder.push(ZaOperation.SEP);
@@ -129,6 +133,19 @@ ZaDashBoardController.initDomainToolbarMethod = function() {
 	this._toolbarOrder.push(ZaOperation.AUTH_WIZARD);
 	this._toolbarOrder.push(ZaOperation.CHECK_MX_RECORD);
 }
+
+ZaDashBoardController.galWizButtonListener =
+	function(ev) {
+		try {
+			this._galWizard = ZaApp.getInstance().dialogs["galWizard"] = new ZaApplianceGALConfigXWizard(this._container,this._currentObject);	
+			this._galWizard.registerCallback(DwtWizardDialog.FINISH_BUTTON, ZaDomainController.prototype._finishGalButtonListener, this, null);			
+			this._galWizard.setObject(this._currentObject);
+			this._galWizard.popup();
+		} catch (ex) {
+				this._handleException(ex, "ZaDashBoardController.galWizButtonListener", null, false);
+		}
+	}
+
 
 ZaDashBoardController.flushThemeCacheListener = function(ev) {
 	var busyId = Dwt.getNextId ();
