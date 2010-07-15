@@ -119,9 +119,14 @@ ZaDashBoardController.hijackMessages = function () {
 	 * Adjust max tabs for appliance
 	 */
 	ZaAppTabGroup.TAB_LIMIT = 8;
+	
+	/**
+	 * Adjust help URLs
+	 */
 	ZaCosController.helpURL = "appliance/zap_managing_user_profiles.htm";
 	ZaAccountViewController.helpURL = "appliance/zap_editing_accounts.htm";
 	DeleteAcctsPgrsDlg.helpURL = "managing_accounts/deleting_accounts.htm";
+	ZaAccChangePwdXDlg.helpURL = "passwords/changing_a_password.htm";
 	/**
 	 * disable "Reset to COS/Global" fields
 	 */
