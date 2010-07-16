@@ -255,7 +255,7 @@ ZaApplianceSettingsView.myXFormModifier = function(xFormObject, entry) {
 	_tab1 = ++this.TAB_INDEX;
 	var case1 = {type:_ZATABCASE_, caseKey:_tab1, colSizes:["auto"],numCols:1,
 	items:[
-		{type:_ZAGROUP_,
+		{type:_ZAGROUP_,colSizes:["275px","*"],numCols:2,
 			items:[
 				{ref:ZaGlobalConfig.A_zimbraDefaultDomainName, type:_DYNSELECT_,
 					label: ZaMsg.NAD_DefaultDomainName,
@@ -526,7 +526,7 @@ ZaApplianceSettingsView.myXFormModifier = function(xFormObject, entry) {
 	//_tab4 = ++this.TAB_INDEX;
    // tabBarChoices.push ({value:_tab4, label:com_zimbra_dashboard.CertificatesTabTitle});
     var case4 = 	
-    {type:_ZATABCASE_, caseKey:_tab4, id:"appliance_settings_form_certificates_tab", colSizes:["275px","275px"],numCols:2, items:[
+    {type:_ZATABCASE_, caseKey:_tab4, id:"appliance_settings_form_certificates_tab", colSizes:["275px","*"],numCols:2, items:[
 		//{type:_OUTPUT_,ref:ZaApplianceSettings.A_serverName, label:com_zimbra_dashboard.CERT_SERVER_NAME,labelLocation:_LEFT_},
 		{ type: _DWT_ALERT_,
 			style: DwtAlert.WARNING,
