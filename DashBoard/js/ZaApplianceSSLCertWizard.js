@@ -543,6 +543,8 @@ ZaApplianceSSLCertWizard.myXFormModifier = function(xFormObject) {
 			  items :[
 				{ref: ZaApplianceSSLCert.A_force_new_csr, type: _CHECKBOX_ , label: com_zimbra_dashboard.FORCE_NEW_CSR , 
 					visibilityChecks:[" instance[ZaApplianceSSLCert.A_csr_exists] == true "],
+                    enableDisableChecks:[" instance[ZaApplianceSSLCert.A_csr_exists] == true "],
+                    enableDisableChangeEventSources:[ZaApplianceSSLCert.A_csr_exists],
                     onChange: function (value, event, form) {
 						this.setInstanceValue (value) ;
 						form.parent._containedObject.modifySubjectAltNames();
@@ -555,8 +557,10 @@ ZaApplianceSSLCertWizard.myXFormModifier = function(xFormObject) {
 					labelLocation:_LEFT_,
 					choices:ZaApplianceSSLCert.KEY_SIZE_CHOICES,
                     visibilityChecks:[],
-                    enableDisableChecks:[] },
-				{ ref: ZaApplianceSSLCert.A_commonName, type:_TEXTFIELD_, width: 150,
+                    enableDisableChecks:[ZaApplianceSSLCertWizard.isCSRFieldsEnabled],
+				    enableDisableChangeEventSources:[ZaApplianceSSLCert.A_csr_exists, ZaApplianceSSLCert.A_force_new_csr]
+                  },
+        		{ ref: ZaApplianceSSLCert.A_commonName, type:_TEXTFIELD_, width: 150,
 					visibilityChecks:[],  bmolsnr:true,
                     enableDisableChecks:[ZaApplianceSSLCertWizard.isCSRFieldsEnabled],
 				    enableDisableChangeEventSources:[ZaApplianceSSLCert.A_csr_exists, ZaApplianceSSLCert.A_force_new_csr],
