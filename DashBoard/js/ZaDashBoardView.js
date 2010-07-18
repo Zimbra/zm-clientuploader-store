@@ -472,15 +472,15 @@ ZaDashBoardView.myXFormModifier = function(xFormObject,entry) {
    	    	    	cssStyle:"overflow: hidden;", width:"100%",ref:ZaSearch.A_query, bmolsnr: true,
    	    	    	enableDisableChecks:[],visibilityChecks:[],id:"dashBoardSearchField",
 					elementChanged: function(elementValue,instanceValue, event) {
-					var charCode = event.charCode;
-					if (charCode == 13 || charCode == 3) {
-						var view = this.getForm().parent; 
-						view.searchAddresses(view.types,0, null, true);
-					} else {
-						this.getForm().itemChanged(this, elementValue, event);
-					}
+						var charCode = event.charCode;
+						if (charCode == 13 || charCode == 3) {
+							var view = this.getForm().parent; 
+							view.searchAddresses(view.types,0, null, true);
+						} else {
+							this.getForm().itemChanged(this, elementValue, event);
+						}
+	            	}
 				},   	    	    	
-   	    	    },
    	    	    {type:_CELLSPACER_,width:"5px"},
    	    	    {type:_MENU_BUTTON_,label:com_zimbra_dashboard.SearchFilter_All,icon:"SearchAll",enableDisableChecks:[],visibilityChecks:[],
    	    	    	choices:ZaDashBoardView.searchChoices,toolTipContent:ZaMsg.searchToolTip,id:"dashBoardSearchMenuButton"
