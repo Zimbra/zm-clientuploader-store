@@ -72,7 +72,11 @@ ZaController.initToolbarMethods["ZaApplianceAdvancedToolsController"].push(ZaApp
 
 ZaApplianceAdvancedToolsController.prototype.onOpen = function () {
 	if(!this.loaded) {
-		this._currentObject.load();
+		try {
+			this._currentObject.load();
+		} catch (ex) {
+			this._handleException(ex, "ZaApplianceAdvancedToolsController.prototype.onOpen", null, false);	
+		}
 		this._currentObject[ZaModel.currentTab] = "1"
 		this._currentObject.id = ZaItem.ADVANCED_TOOLS;
 	    this._view.setDirty(false);
@@ -147,7 +151,11 @@ ZaApplianceAdvancedToolsController.prototype.openMigrationWizard = function () {
 };
 
 ZaApplianceAdvancedToolsController.prototype.refreshButtonListener = function(ev) {
-	this._currentObject.load();
+	try {
+		this._currentObject.load();
+	} catch (ex) {
+		this._handleException(ex, "ZaApplianceAdvancedToolsController.prototype.onOpen", null, false);	
+	}
 	this._currentObject.id = ZaItem.ADVANCED_TOOLS;
     this._view.setDirty(false);
     this._view.setObject(this._currentObject);
