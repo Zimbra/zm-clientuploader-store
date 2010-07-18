@@ -379,12 +379,10 @@ ZaApplianceSettingsView.myXFormModifier = function(xFormObject, entry) {
 				}
 			]},
 
-			 {type: _ZA_TOP_GROUPER_, label: com_zimbra_dashboard.LB_MTAttachment_option, colSizes: ["330px","470px"],
-//                visibilityChecks:[[XForm.checkInstanceValue,ZaGlobalConfig.A_zimbraAttachmentsBlocked,"FALSE"]],
-//                visibilityChangeEventSources:[ZaGlobalConfig.A_zimbraAttachmentsBlocked],
+			 {type: _ZA_TOP_GROUPER_, label: com_zimbra_dashboard.LB_MTAttachment_option, colSizes: ["365px","470px"],
                  width: "98%", numCols: 2,
                 items:[
-                    { type:_GROUP_ , numCols: 2, colSpan: "*", colSizes:[250, "*"], items: [
+                    { type:_GROUP_ , numCols:2, colSpan: "*", colSizes:["250px", "540px"], items: [
                         { ref: ZaGlobalConfig.A_zimbraMtaBlockedExtensionWarnRecipient, type: _CHECKBOX_,
                             label: ZaMsg.LBL_zimbraMtaBlockedExtensionWarnRecipient,
                             trueValue:"TRUE", falseValue:"FALSE"
@@ -439,7 +437,7 @@ ZaApplianceSettingsView.myXFormModifier = function(xFormObject, entry) {
                                             {type:_CELLSPACER_}
                                         ]
                                     },
-                                    {type:_GROUP_, numCols:7, colSizes:[100,5,100,5,100,60,100],
+                                    {type:_GROUP_, numCols:7, colSizes:[100,5,90,5,100,60,100],
                                         items: [
                                             {type:_DWT_BUTTON_, label:ZaMsg.DLXV_ButtonAddSelected,
                                                 onActivate:"ZaApplianceSettingsView.addCommonExt.call(this)",
