@@ -72,16 +72,25 @@ ZaController.initToolbarMethods["ZaApplianceAdvancedToolsController"].push(ZaApp
 
 ZaApplianceAdvancedToolsController.prototype.onOpen = function () {
 	if(!this.loaded) {
-		try {
-			this._currentObject.load();
-		} catch (ex) {
-			this._handleException(ex, "ZaApplianceAdvancedToolsController.prototype.onOpen", null, false);	
+		if (AjxEnv.isIE) {
+			var busyId = Dwt.getNextId();
+			var cancelCallback = new AjxCallback(this, this.cancelBusyOverlay, {busyId:busyId});
+			this._shell.setBusyDialogText(com_zimbra_dashboard.BUSY_LOADING_SETTINGS);
+			this._shell.setBusy(true, busyId, true, 0, cancelCallback, busyId);
+			var act = new AjxTimedAction(this, this.loadObject);
+			AjxTimedAction.scheduleAction(act, 200);			
+		} else {
+			try {
+				this._currentObject.load();
+			} catch (ex) {
+				this._handleException(ex, "ZaApplianceAdvancedToolsController.prototype.onOpen", null, false);	
+			}
+			this._currentObject[ZaModel.currentTab] = "1"
+			this._currentObject.id = ZaItem.ADVANCED_TOOLS;
+		    this._view.setDirty(false);
+		    this._view.setObject(this._currentObject);
+		    this.loaded = true;
 		}
-		this._currentObject[ZaModel.currentTab] = "1"
-		this._currentObject.id = ZaItem.ADVANCED_TOOLS;
-	    this._view.setDirty(false);
-	    this._view.setObject(this._currentObject);
-	    this.loaded = true;
 	}
 }
 
@@ -150,16 +159,38 @@ ZaApplianceAdvancedToolsController.prototype.openMigrationWizard = function () {
 	}
 };
 
-ZaApplianceAdvancedToolsController.prototype.refreshButtonListener = function(ev) {
+ZaApplianceAdvancedToolsController.prototype.loadObject = function (busyId) {
 	try {
 		this._currentObject.load();
 	} catch (ex) {
-		this._handleException(ex, "ZaApplianceAdvancedToolsController.prototype.onOpen", null, false);	
+		this._handleException(ex, "ZaApplianceAdvancedToolsController.prototype.loadObject", null, false);
 	}
 	this._currentObject.id = ZaItem.ADVANCED_TOOLS;
     this._view.setDirty(false);
     this._view.setObject(this._currentObject);
     this.loaded = true;	
+    this._shell.setBusy(false, busyId, false);
+}
+
+ZaApplianceAdvancedToolsController.prototype.refreshButtonListener = function(ev) {
+	if (AjxEnv.isIE) {
+		var busyId = Dwt.getNextId();
+		var cancelCallback = new AjxCallback(this, this.cancelBusyOverlay, {busyId:busyId});
+		this._shell.setBusyDialogText(com_zimbra_dashboard.BUSY_LOADING_SETTINGS);
+		this._shell.setBusy(true, busyId, true, 0, cancelCallback, busyId);
+		var act = new AjxTimedAction(this, this.loadObject);
+		AjxTimedAction.scheduleAction(act, 200);			
+	} else {
+		try {
+			this._currentObject.load();
+		} catch (ex) {
+			this._handleException(ex, "ZaApplianceAdvancedToolsController.prototype.refreshButtonListener", null, false);	
+		}
+		this._currentObject.id = ZaItem.ADVANCED_TOOLS;
+	    this._view.setDirty(false);
+	    this._view.setObject(this._currentObject);
+	    this.loaded = true;	
+	}
 }
 
 ZaApplianceAdvancedToolsController.prototype.openBulkProvisionDialog = function () {

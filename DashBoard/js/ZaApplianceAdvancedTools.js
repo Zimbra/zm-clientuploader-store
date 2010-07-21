@@ -98,11 +98,13 @@ function(by, val) {
 	params = new Object();
 	params.soapDoc = soapDoc;
 	var busyId = Dwt.getNextId();
-	reqMgrParams.busyId = busyId;
-	reqMgrParams.showBusy = true;
+	if (!AjxEnv.isIE) {
+		reqMgrParams.busyId = busyId;
+		reqMgrParams.showBusy = true;
+		reqMgrParams.busyMsg = com_zimbra_dashboard.BUSY_LOADING_SETTINGS;
+		reqMgrParams.delay = 0;
+	}
 	reqMgrParams.controller = ZaApp.getInstance().getCurrentController();
-	reqMgrParams.busyMsg = com_zimbra_dashboard.BUSY_LOADING_SETTINGS;
-	reqMgrParams.delay = 0;
     var hasError = false ;
     var lastException;
 	try {
