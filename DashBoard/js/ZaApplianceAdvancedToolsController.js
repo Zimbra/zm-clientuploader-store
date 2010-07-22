@@ -302,15 +302,6 @@ ZaApplianceAdvancedToolsController.prototype.finishLicenseWizard = function() {
         var licenseObj = new ZaApplianceLicense();
         licenseObj.load();
 
-        if(licenseObj && licenseObj.attrs && licenseObj.attrs[ZaApplianceLicense.A_validUntil] && licenseObj.attrs[ZaApplianceLicense.A_validFrom]) {
-	        var dTo =  ZaApplianceLicense.getLocalDate(licenseObj.attrs[ZaApplianceLicense.A_validUntil]);
-	        var dFrom = ZaApplianceLicense.getLocalDate(licenseObj.attrs[ZaApplianceLicense.A_validFrom]);
-	        var dDelta = dTo.getTime() - dFrom.getTime();
-	        if(dDelta < 1296000000 && dDelta > 0) { 
-	        	ZaApplianceLicense.removeLicense();
-	        	ZaApplianceLicense.flushLicenseCache();
-	        }
-        }
 		var xform = this._view._localXForm;
 		xform.setInstanceValue(0, ZaApplianceLicense.InstallStatusCode);
 		var soapDoc = AjxSoapDoc.create("InstallLicenseRequest", "urn:zimbraAdmin", null);
