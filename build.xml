@@ -26,8 +26,6 @@
 	<property name="common.dir" location="../ZimbraCommon" />
 	<property name="common.classes.dir" location="${common.dir}/build/classes" />
 	<property name="common.jars.dir" location="${common.dir}/jars" />
-	<property name="client.dir" location="../ZimbraClient" />
-	<property name="client.classes.dir" location="${client.dir}/build/classes" />
 
 	<!-- build -->
 	<property name="build.classes.dir" location="${build.dir}/classes" />
@@ -67,7 +65,6 @@
 	</target>
 		
 	<path id="class.path">
-		<pathelement location="${client.classes.dir}" />
 		<pathelement location="${common.classes.dir}" />
 		<pathelement location="${network.classes.dir}" />		
 		<pathelement location="${build.classes.dir}" />
@@ -201,16 +198,7 @@
 	    	<param name="ext.dir" value="CertificateMgr"/>
 			<param name="ext.name" value="com_zimbra_cert_manager" />
 	  	</antcall>
-	<antcall target="deploy-zimlet">
-            <param name="ext.dir" value="HelpTooltip"/>
-            <param name="ext.name" value="com_zimbra_tooltip"/>		
-	</antcall>
     </target>
 
-    <target name="deploy-helptooltip" description="deploy help tooltip admin extension">
-        <antcall target="deploy-zimlet">
-            <param name="ext.dir" value="HelpTooltip"/>
-            <param name="ext.name" value="com_zimbra_tooltip"/>
-        </antcall>
-    </target>
+
 </project>
