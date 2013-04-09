@@ -199,7 +199,7 @@
 			<param name="ext.name" value="com_zimbra_cert_manager" />
 	  	</antcall>
 
-        <antcall target="deploy">
+        <antcall target="deploy-zimlet">
             <param name="ext.dir" value="com_zimbra_viewmail"/>
             <param name="ext.name" value="com_zimbra_viewmail" />
         </antcall>
