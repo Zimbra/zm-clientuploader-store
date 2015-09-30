@@ -1,5 +1,7 @@
 <project name="ZimbraAdminExt" default="deploy-all">
 
+    <import file="../ant-global.xml"/>
+
     <import file="../ZimbraCustomerServices/hosted/YahooSmb/ZimbraAdminExt/build.xml" optional="true" />
     <property file="build.properties"/>
     <property environment="env"/>
@@ -23,11 +25,6 @@
 	<property name="build.dir" location="build" />
 	<property name="network.dir" location="../ZimbraNetwork/ZimbraServer" />
 	<property name="network.classes.dir" location="${network.dir}/build/classes" />	
-	<property name="common.dir" location="../ZimbraCommon" />
-	<property name="common.classes.dir" location="${common.dir}/build/classes" />
-	<property name="common.jars.dir" location="${common.dir}/jars" />
-	<property name="client.dir" location="../ZimbraClient" />
-	<property name="client.classes.dir" location="${client.dir}/build/classes" />
 
 	<!-- build -->
 	<property name="build.classes.dir" location="${build.dir}/classes" />
@@ -38,7 +35,6 @@
 	<property name="dist.lib.dir" location="${dist.dir}/lib"/>
 	<property name="dist.lib.ext.dir" location="${dist.lib.dir}/ext"/>
 	<property name="zimlet.dist.dir" location="${dist.dir}/zimlets"/>
-	<property name="zimbrasoap.dir" location="../ZimbraSoap" />
 	
 
 	<!-- deploy -->
@@ -71,8 +67,8 @@
 		<pathelement location="${common.classes.dir}" />
 		<pathelement location="${network.classes.dir}" />		
 		<pathelement location="${build.classes.dir}" />
-		<pathelement location="${zimbraServer.dir}/build/classes"/>
-        <pathelement location="${zimbrasoap.dir}/build/classes" />
+		<pathelement location="${server.classes.dir}"/>
+        <pathelement location="${soap.classes.dir}" />
 		<fileset dir="${common.dir}/jars">
 			<include name="**/*.jar"/>
 		</fileset>
