@@ -44,6 +44,12 @@
 	<!-- deploy -->
 	<property name="zimbra.home.dir" location="/opt/zimbra" />	
 
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${common.jars.dir}/ant-contrib-1.0b1.jar"/>
+        </classpath>
+    </taskdef>
+
 	<target name="build-init">
 	   	<mkdir dir="${build.zimlet.dir}" /> 
 		<mkdir dir="${build.classes.dir}" /> 
@@ -66,18 +72,20 @@
 		<delete dir="${dist.dir}" />
 	</target>
 		
-	<path id="class.path">
-		<pathelement location="${client.classes.dir}" />
-		<pathelement location="${common.classes.dir}" />
-		<pathelement location="${network.classes.dir}" />		
-		<pathelement location="${build.classes.dir}" />
-		<pathelement location="${zimbraServer.dir}/build/classes"/>
+    <path id="class.path">
+        <pathelement location="${client.classes.dir}" />
+        <pathelement location="${common.classes.dir}" />
+        <pathelement location="${network.classes.dir}" />
+        <pathelement location="${build.classes.dir}" />
+        <pathelement location="${zimbraServer.dir}/build/classes"/>
         <pathelement location="${zimbrasoap.dir}/build/classes" />
-		<fileset dir="${common.dir}/jars">
-			<include name="**/*.jar"/>
-		</fileset>
-	
-	</path>	
+        <fileset dir="${common.dir}/jars">
+            <include name="**/*.jar"/>
+        </fileset>
+        <fileset dir="BulkProvision/jars">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
 
 	<target name="package-zimlet" depends='build-init' description="put zimlet files into zip archive for deployment">
 		<echo>Packing zimlet ${ext.name} to ${build.zimlet.dir}/${ext.name}.zip </echo>
@@ -119,13 +127,21 @@
 		<jar manifest="${ext.dir}/conf/MANIFEST.MF" destfile="${build.dir}/${ext.name}.jar" basedir="${build.classes.dir}" />
 	</target>	
 	
-	<target name="deploy-server-extension" depends="jar">
-		<ant dir="${zimbraServer.dir}" target="stop-webserver" inheritAll="false"/>
-		<copy todir="${zimbra.home.dir}/lib/ext/${ext.name}">
-			<fileset dir="${build.dir}" includes="${ext.name}.jar" />
-		</copy>
-		<ant dir="${zimbraServer.dir}" target="start-webserver" inheritAll="false"/>
-	 </target>
+    <target name="deploy-server-extension" depends="jar">
+        <ant dir="${zimbraServer.dir}" target="stop-webserver" inheritAll="false"/>
+        <copy todir="${zimbra.home.dir}/lib/ext/${ext.name}">
+            <fileset dir="${build.dir}" includes="${ext.name}.jar" />
+        </copy>
+        <if>
+            <available file="${ext.dir}/jars" type="dir" />
+            <then>
+                <copy todir="${zimbra.home.dir}/lib/ext/${ext.name}">
+                    <fileset dir="${ext.dir}/jars" includes="*.jar" />
+                </copy>
+            </then>
+        </if>
+        <ant dir="${zimbraServer.dir}" target="start-webserver" inheritAll="false"/>
+    </target>
 
     <target name="scp" description="Copy the zip file to the deploy machine">
 		<echo message="Secure Copying the ${scp_src} to ${scp_dest}" />
