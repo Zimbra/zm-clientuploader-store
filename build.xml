@@ -25,6 +25,7 @@
 	<property name="build.dir" location="build" />
 	<property name="network.dir" location="../ZimbraNetwork/ZimbraServer" />
 	<property name="network.classes.dir" location="${network.dir}/build/classes" />	
+	<property name="bulkprovision.dir" location="ZimbraBulkProvision/" />
 
 	<!-- build -->
 	<property name="build.classes.dir" location="${build.dir}/classes" />
@@ -209,10 +210,7 @@
 	</target>
 	
 	<target name="deploy-bulkprovision" description="deploy Bulk Provision">
-		<antcall target="deploy">
-			<param name="ext.dir" value="BulkProvision"/>
-			<param name="ext.name" value="com_zimbra_bulkprovision" />
-		</antcall>
+	    <ant dir="${bulkprovision.dir}" target="deploy"/>
 	</target>
 
 	<target name="deploy-clientuploader">
