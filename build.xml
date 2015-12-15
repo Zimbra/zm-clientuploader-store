@@ -101,21 +101,11 @@
 		</java>
 	</target>
 
-
-    <target name="compile" depends="build-init" description="Compiles the source code">
-        <path id="all.java.path">
-            <pathelement location="${ext.dir}/java" />
-        </path>
-        <ant dir="${common.dir}" target="jar" inheritAll="false" />
-		<javac destdir="${build.classes.dir}" debug="true" classpathref="class.path">
-			<src refid="all.java.path" />
-		</javac>
+	<target name="jar" description="Creates the jar file">
+            <ant dir="${ext.dir}" target="jar" inheritAll="false" />
+            <copy tofile="${build.dir}/${ext.name}.jar" file="${ext.dir}/target/${ext.name}-${project.maven.version}.jar" />
 	</target>
-				
-	<target name="jar" depends="compile" description="Creates the jar file">
-		<jar manifest="${ext.dir}/conf/MANIFEST.MF" destfile="${build.dir}/${ext.name}.jar" basedir="${build.classes.dir}" />
-	</target>	
-	
+
 	<target name="deploy-server-extension" depends="jar">
 		<ant dir="${zimbraServer.dir}" target="stop-webserver" inheritAll="false"/>
 		<copy todir="${zimbra.home.dir}/lib/ext/${ext.name}">
