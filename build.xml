@@ -1,5 +1,7 @@
 <project name="ZimbraAdminExt" default="deploy-all">
 
+    <import file="../ant-global.xml"/>
+
     <import file="../ZimbraCustomerServices/hosted/YahooSmb/ZimbraAdminExt/build.xml" optional="true" />
     <property file="build.properties"/>
     <property environment="env"/>
@@ -23,11 +25,7 @@
 	<property name="build.dir" location="build" />
 	<property name="network.dir" location="../ZimbraNetwork/ZimbraServer" />
 	<property name="network.classes.dir" location="${network.dir}/build/classes" />	
-	<property name="common.dir" location="../ZimbraCommon" />
-	<property name="common.classes.dir" location="${common.dir}/build/classes" />
-	<property name="common.jars.dir" location="${common.dir}/jars" />
-	<property name="client.dir" location="../ZimbraClient" />
-	<property name="client.classes.dir" location="${client.dir}/build/classes" />
+	<property name="bulkprovision.dir" location="ZimbraBulkProvision/" />
 
 	<!-- build -->
 	<property name="build.classes.dir" location="${build.dir}/classes" />
@@ -38,17 +36,10 @@
 	<property name="dist.lib.dir" location="${dist.dir}/lib"/>
 	<property name="dist.lib.ext.dir" location="${dist.lib.dir}/ext"/>
 	<property name="zimlet.dist.dir" location="${dist.dir}/zimlets"/>
-	<property name="zimbrasoap.dir" location="../ZimbraSoap" />
 	
 
 	<!-- deploy -->
 	<property name="zimbra.home.dir" location="/opt/zimbra" />	
-
-    <taskdef resource="net/sf/antcontrib/antlib.xml">
-        <classpath>
-            <pathelement location="${common.jars.dir}/ant-contrib-1.0b1.jar"/>
-        </classpath>
-    </taskdef>
 
 	<target name="build-init">
 	   	<mkdir dir="${build.zimlet.dir}" /> 
@@ -72,20 +63,18 @@
 		<delete dir="${dist.dir}" />
 	</target>
 		
-    <path id="class.path">
-        <pathelement location="${client.classes.dir}" />
-        <pathelement location="${common.classes.dir}" />
-        <pathelement location="${network.classes.dir}" />
-        <pathelement location="${build.classes.dir}" />
-        <pathelement location="${zimbraServer.dir}/build/classes"/>
-        <pathelement location="${zimbrasoap.dir}/build/classes" />
-        <fileset dir="${common.dir}/jars">
-            <include name="**/*.jar"/>
-        </fileset>
-        <fileset dir="BulkProvision/jars">
-            <include name="**/*.jar"/>
-        </fileset>
-    </path>
+	<path id="class.path">
+		<pathelement location="${client.classes.dir}" />
+		<pathelement location="${common.classes.dir}" />
+		<pathelement location="${network.classes.dir}" />		
+		<pathelement location="${build.classes.dir}" />
+		<pathelement location="${server.classes.dir}"/>
+        <pathelement location="${soap.classes.dir}" />
+		<fileset dir="${common.dir}/jars">
+			<include name="**/*.jar"/>
+		</fileset>
+	
+	</path>	
 
 	<target name="package-zimlet" depends='build-init' description="put zimlet files into zip archive for deployment">
 		<echo>Packing zimlet ${ext.name} to ${build.zimlet.dir}/${ext.name}.zip </echo>
@@ -94,20 +83,14 @@
 			<fileset dir="${ext.dir}/js" includes="*"/>
 		</zip>
 	</target>
-
-    <target name="dist-zimlet" depends='package-zimlet'>
-        <copy todir="${dist.dir}/zimlets/">
-            <fileset dir="${build.zimlet.dir}" includes="${ext.name}.zip" />
-        </copy>
-    </target>
-
+	
 	<target name="undeploy-zimlet" description="undeploy zimlet">
 		<echo>Undeploying zimlet: ${ext.name} </echo>
 		<java classname="com.zimbra.cs.zimlet.ZimletUtil" fork="true" classpathref="class.path" failonerror="true">
 			<arg line="undeploy ${ext.name}" />
 		</java>
 	</target>	
-
+		
 	<target name="deploy-zimlet" depends='package-zimlet' description="install UI files, deploy zimlet to LDAP">
 		<echo>Deploying zimlet: ${ext.name}</echo>
 		<mkdir dir="${build.zimlet.dir}" />
@@ -118,92 +101,20 @@
 		</java>
 	</target>
 
-    <target name="compile" depends="build-init" description="Compiles the source code">
-        <path id="all.java.path">
-            <pathelement location="${ext.dir}/java" />
-        </path>
-        <ant dir="${common.dir}" target="jar" inheritAll="false" />
-		<javac destdir="${build.classes.dir}" debug="true" classpathref="class.path">
-			<src refid="all.java.path" />
-		</javac>
+	<target name="jar" description="Creates the jar file">
+            <ant dir="${ext.dir}" target="jar" inheritAll="false" />
+            <copy tofile="${build.dir}/${ext.name}.jar" file="${ext.dir}/target/${ext.name}-${project.maven.version}.jar" />
 	</target>
-				
-	<target name="jar" depends="compile" description="Creates the jar file">
-		<jar manifest="${ext.dir}/conf/MANIFEST.MF" destfile="${build.dir}/${ext.name}.jar" basedir="${build.classes.dir}" />
-	</target>	
 
-    <target name="deploy-server-extension" depends="jar">
-        <ant dir="${zimbraServer.dir}" target="stop-webserver" inheritAll="false"/>
-        <copy todir="${zimbra.home.dir}/lib/ext/${ext.name}">
-            <fileset dir="${build.dir}" includes="${ext.name}.jar" />
-        </copy>
-        <if>
-            <available file="${ext.dir}/jars" type="dir" />
-            <then>
-                <copy todir="${zimbra.home.dir}/lib/ext/${ext.name}">
-                    <fileset dir="${ext.dir}/jars" includes="*.jar" />
-                </copy>
-            </then>
-        </if>
-        <ant dir="${zimbraServer.dir}" target="start-webserver" inheritAll="false"/>
-    </target>
+	<target name="deploy-server-extension" depends="jar">
+		<ant dir="${zimbraServer.dir}" target="stop-webserver" inheritAll="false"/>
+		<copy todir="${zimbra.home.dir}/lib/ext/${ext.name}">
+			<fileset dir="${build.dir}" includes="${ext.name}.jar" />
+		</copy>
+		<ant dir="${zimbraServer.dir}" target="start-webserver" inheritAll="false"/>
+	 </target>
 
-    <target name="dist-server-extension" depends="jar">
-        <copy todir="${dist.dir}/lib/ext/${ext.name}">
-            <fileset dir="${build.dir}" includes="${ext.name}.jar" />
-        </copy>
-        <if>
-            <available file="${ext.dir}/jars" type="dir" />
-            <then>
-                <copy todir="${dist.dir}/lib/ext/${ext.name}">
-                    <fileset dir="${ext.dir}/jars" includes="*.jar" />
-                </copy>
-            </then>
-        </if>
-    </target>
-    <target name="dist-extension" depends="dist-zimlet, dist-server-extension"
-            description="Package server and admin extensions for distribution, must have ext.dir and ext.name property set."/>
-
-    <target name="dist-bulkprovision" description="package com_zimbra_bulkprovision extension">
-        <antcall target="dist-extension">
-            <param name="ext.dir" value="BulkProvision"/>
-            <param name="ext.name" value="com_zimbra_bulkprovision" />
-        </antcall>
-    </target>
-
-    <target name="dist-certmgr" description="package certificate manager extension">
-        <antcall target="dist-extension">
-            <param name="ext.dir" value="CertificateMgr"/>
-            <param name="ext.name" value="com_zimbra_cert_manager"/>
-        </antcall>
-    </target>
-
-    <target name="dist-clientuploader" description="package client uploader extention">
-        <antcall target="dist-extension">
-            <param name="ext.dir" value="ClientUploader"/>
-            <param name="ext.name" value="com_zimbra_clientuploader" />
-        </antcall>
-    </target>
-
-    <target name="dist">
-      <antcall target="dist-bulkprovision" />
-      <antcall target="dist-certmgr" />
-      <antcall target="dist-clientuploader" />
-      <antcall target="dist-zimlet">
-          <param name="ext.dir" value="HelpTooltip"/>
-          <param name="ext.name" value="com_zimbra_tooltip"/>
-      </antcall>
-      <antcall target="dist-zimlet">
-          <param name="ext.dir" value="ProxyConfig" />
-          <param name="ext.name" value="com_zimbra_proxy_config" />
-      </antcall>
-      <antcall target="dist-zimlet">
-          <param name="ext.dir" value="com_zimbra_viewmail"/>
-          <param name="ext.name" value="com_zimbra_viewmail"/>
-      </antcall>
-    </target>
-
-	<target name="scp" description="Copy the zip file to the deploy machine">
+    <target name="scp" description="Copy the zip file to the deploy machine">
 		<echo message="Secure Copying the ${scp_src} to ${scp_dest}" />
 		<exec executable="${scp}">
 			<!-- remote port -->
@@ -224,6 +135,7 @@
 		-->
 	</target>
 
+	    	
 	<target name="copy-files-to-dev-machine" depends="package-zimlet" description="copy the files to the test/dev machine" >
 		<!-- PSCP copy the file to the build -->
 		<!-- Copy the jar file -->
@@ -261,7 +173,7 @@
 	</target>    	
 
     <target name="deploy-dev-cert" depends="package-zimlet, jar, copy-files-to-dev-machine" description="Deploy the extension"/>
-
+    
 	<!-- deploy the extension for development -->
     <target name="deploy" depends="deploy-zimlet, deploy-server-extension"
             description="Deploy the extension, must have ext.dir and ext.name property set"/>
@@ -288,10 +200,7 @@
 	</target>
 	
 	<target name="deploy-bulkprovision" description="deploy Bulk Provision">
-		<antcall target="deploy">
-			<param name="ext.dir" value="BulkProvision"/>
-			<param name="ext.name" value="com_zimbra_bulkprovision" />
-		</antcall>
+	    <ant dir="${bulkprovision.dir}" target="deploy"/>
 	</target>
 
 	<target name="deploy-clientuploader">
