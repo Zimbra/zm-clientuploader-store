@@ -1,0 +1,82 @@
+<project name="ZimbraBulkProvision" default="jar">
+
+    <import file="../../ant-global.xml" />
+
+	<condition property="zimbraServer.dir" value="../../ZimbraServer">
+	    <not><isset property="env.ZIMBRASERVER_DIR"/></not>
+	</condition>
+
+	<property name="jar.file" value="com_zimbra_bulkprovision-${project.maven.version}.jar" />
+	<property name="src.zimlet.dir" location="${src.dir}/zimlet" />
+	<property name="build.zimlet.dir" location="${build.dir}/zimlet" />
+	<property name="ext.deploy.dir" location="${zimbra.home.dir}/lib/ext/com_zimbra_bulkprovision"/>
+
+	<!-- compile extension code -->
+	<path id="class.path">
+		<pathelement location="${common.classes.dir}" />
+        <pathelement location="${soap.classes.dir}" />
+        <pathelement location="${client.classes.dir}" />
+		<pathelement location="${target.classes.dir}" />
+		<pathelement location="${server.classes.dir}"/>
+		<fileset dir="${common.dir}/jars">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+	<fileset dir="${src.java.dir}">
+		<include name="**/*.java" />
+	</fileset>
+
+	<target name="build-init">
+		<mkdir dir="${build.classes.dir}" />
+		<mkdir dir="${build.zimlet.dir}" />		
+	</target>
+
+	<target name="compile" depends="build-init" description="Compiles the source code for com_zimbra_bulkprovision extension">
+		<maven dir="." goal="compile" />
+	</target>
+
+	<!-- build com_zimbra_bulkprovision.jar -->
+    <target name="jar" depends="compile" description="Creates the jar file">
+        <antcall target="zimbra-jar">
+            <param name="implementation.title" value="Zimbra Bulk Provision Extension"/>
+            <param name="zimbra.extension.class" value="com.zimbra.bp.ZimbraBulkProvisionExt"/>
+        </antcall>
+    </target>
+
+    <target name="dev-clean" description="Stop jetty, remove deployed jar, and remove build files">
+		<ant dir="${zimbraServer.dir}" target="stop-webserver" inheritAll="false"/>
+		<delete file="${ext.deploy.dir}/${jar.file}"/>
+    	<antcall target="clean"/>
+    </target>
+
+	<target name="package-zimlet" description="put zimlet files into zip archive for deployment">
+		<mkdir dir="${build.zimlet.dir}" />
+		<zip destfile="${build.zimlet.dir}/com_zimbra_bulkprovision.zip" update="true">
+			<fileset dir="${src.zimlet.dir}" includes="*"/>
+		</zip>
+	</target>
+	<target name="deploy-zimlet" depends='package-zimlet' description="install UI files, deploy zimlet to LDAP">
+		<echo>Deploying zimlet: com_zimbra_bulkprovision</echo>
+		<mkdir dir="${build.zimlet.dir}" />
+		<java classname="com.zimbra.cs.zimlet.ZimletUtil" fork="true" classpathref="class.path" failonerror="true">
+			<arg line="-q -l" />
+			<arg line="deploy" />
+			<arg file="${build.zimlet.dir}/com_zimbra_bulkprovision.zip" />
+		</java>
+	</target>	
+
+	<!-- deploy the extension -->
+	<target name="deploy" depends="jar,deploy-zimlet" description="Deploy the extension">
+		<ant dir="${zimbraServer.dir}" target="stop-webserver" inheritAll="false"/>
+		<ant target="deploy-jar"/>
+		<ant dir="${zimbraServer.dir}" target="start-webserver" inheritAll="false"/>
+	</target>
+
+	<target name="deploy-jar" depends="" description="Copy the jar file into the extension directory">
+        <maven dir="." goal="dependency:copy-dependencies"/>
+        <copy file="${target.dir}/${jar.file}" tofile="${ext.deploy.dir}/${jar.file}"/>
+        <copy todir="${ext.deploy.dir}">
+                <fileset dir="${common.jars.dir}" includes="commons-csv-*.jar" />
+        </copy>
+	</target>
+</project>
