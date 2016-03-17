@@ -16,23 +16,26 @@
  */
 package com.zimbra.clientuploader;
 
-import com.zimbra.common.service.ServiceException;
-import com.zimbra.common.util.StringUtil;
-import com.zimbra.cs.account.Account;
-import com.zimbra.cs.account.AuthToken;
-
-import com.zimbra.cs.account.Provisioning;
-import com.zimbra.cs.account.accesscontrol.RightCommand;
-import com.zimbra.cs.extension.ExtensionHttpHandler;
-
-import com.zimbra.cs.servlet.ZimbraServlet;
-
-import com.zimbra.soap.admin.type.GranteeSelector.GranteeBy;
+import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.List;
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+import com.zimbra.common.util.Constants;
+import com.zimbra.common.util.StringUtil;
+import com.zimbra.cs.account.AuthToken;
+import com.zimbra.cs.account.Provisioning;
+import com.zimbra.cs.account.accesscontrol.RightCommand;
+import com.zimbra.cs.extension.ExtensionHttpHandler;
+import com.zimbra.cs.service.FileUploadServlet;
+import com.zimbra.cs.servlet.CsrfFilter;
+import com.zimbra.cs.servlet.ZimbraServlet;
+import com.zimbra.cs.servlet.util.CsrfUtil;
+import com.zimbra.soap.admin.type.GranteeSelector.GranteeBy;
 
 /**
  * A handler to deal with uploading client software request.
@@ -52,10 +55,46 @@ public class ClientUploadHandler extends ExtensionHttpHandler {
         try {
             AuthToken authToken = ZimbraServlet.getAdminAuthTokenFromCookie(req, resp);
             if (!authenticate(authToken, resp)){
+                FileUploadServlet.drainRequestStream(req);
                 return;
             }
+
+            boolean doCsrfCheck = false;
+            boolean csrfCheckComplete = false;
+            if (req.getAttribute(CsrfFilter.CSRF_TOKEN_CHECK) != null) {
+                doCsrfCheck = (Boolean) req.getAttribute(CsrfFilter.CSRF_TOKEN_CHECK);
+            }
+
+            if (doCsrfCheck) {
+                String csrfToken = req.getHeader(Constants.CSRF_TOKEN);
+                if (!StringUtil.isNullOrEmpty(csrfToken)) {
+                    if (!CsrfUtil.isValidCsrfToken(csrfToken, authToken)) {
+                        FileUploadServlet.drainRequestStream(req);
+                        throw new ZClientUploaderException(ZClientUploaderRespCode.NO_PERMISSION);
+                    }
+                    csrfCheckComplete = true;
+                }
+            } else {
+                csrfCheckComplete = true;
+            }
+
+            if (!ServletFileUpload.isMultipartContent(req)) {
+                FileUploadServlet.drainRequestStream(req);
+                throw new ZClientUploaderException(ZClientUploaderRespCode.NOT_A_FILE);
+            }
+
+            ServletFileUpload upload = FileUploadServlet.getUploader(ClientUploaderLC.client_software_max_size
+                    .longValue());
+            List<FileItem> items = upload.parseRequest(req);
+
+            // look for csrf token in form fields if we did not find it in X-Zimbra-Csrf header
+            if (!csrfCheckComplete && !CsrfUtil.checkCsrfInMultipartFilleUpload(items, authToken)) {
+                FileUploadServlet.drainRequestStream(req);
+                throw new ZClientUploaderException(ZClientUploaderRespCode.NO_PERMISSION);
+            }
+
             checkRight(authToken);
-            man.uploadClient(req);
+            man.uploadClient(items);
             sendSuccess(resp, reqId);
         } catch (ZClientUploaderException e) {
             Log.clientUploader.error("",e);
