@@ -17,8 +17,11 @@
 package com.zimbra.clientuploader;
 
 import com.zimbra.common.service.ServiceException;
+import com.zimbra.common.util.ZimbraLog;
 import com.zimbra.cs.extension.ExtensionDispatcherServlet;
 import com.zimbra.cs.extension.ZimbraExtension;
+import com.zimbra.qa.unittest.TestClientUploader;
+import com.zimbra.qa.unittest.ZimbraSuite;
 
 public class ZClientUploaderExt implements ZimbraExtension {
     public static final String EXTENTION_NAME = "clientUploader";
@@ -30,6 +33,13 @@ public class ZClientUploaderExt implements ZimbraExtension {
             ExtensionDispatcherServlet.register(this, new ClientUploadHandler());
         } catch (ServiceException e) {
             Log.clientUploader.fatal("caught exception while registering ClientUploadHandler");
+        }
+
+        try {
+            ZimbraSuite.addTest(TestClientUploader.class);
+        } catch (NoClassDefFoundError e) {
+            // Expected in production, because JUnit is not available.
+            ZimbraLog.test.debug("Unable to load TestClientUploader unit tests.", e);
         }
     }
 
