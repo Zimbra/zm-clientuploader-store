@@ -125,10 +125,8 @@ public class TestClientUploader extends TestCase {
         client.setState(state);
         post.setRequestEntity(new MultipartRequestEntity(new Part[] { part }, post.getParams()));
         int statusCode = HttpClientUtil.executeMethod(client, post);
-        assertEquals("This request should succeed. Getting status code " + statusCode, HttpStatus.SC_OK, statusCode);
-        String resp = post.getResponseBodyAsString();
-        assertNotNull("Response should not be empty", resp);
-        assertTrue("Incorrect HTML response", resp.contains(RESP_STR));
+        assertEquals("This request should not succeed. Getting status code " + statusCode, HttpStatus.SC_FORBIDDEN,
+                statusCode);
     }
 
     @Test
