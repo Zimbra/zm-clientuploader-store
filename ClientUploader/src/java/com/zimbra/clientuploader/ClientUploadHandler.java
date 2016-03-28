@@ -85,6 +85,7 @@ public class ClientUploadHandler extends ExtensionHttpHandler {
 
             ServletFileUpload upload = FileUploadServlet.getUploader(ClientUploaderLC.client_software_max_size
                     .longValue());
+            @SuppressWarnings("unchecked")
             List<FileItem> items = upload.parseRequest(req);
 
             // look for csrf token in form fields if we did not find it in X-Zimbra-Csrf header
@@ -99,27 +100,30 @@ public class ClientUploadHandler extends ExtensionHttpHandler {
         } catch (ZClientUploaderException e) {
             Log.clientUploader.error("",e);
             String msg;
+            int sc = HttpServletResponse.SC_OK;
             switch (e.getRespCode()) {
-                case FILE_EXCEED_LIMIT:
-                    msg = ZClientUploaderRespCode.FILE_EXCEED_LIMIT.getDescription();
-                    break;
-                case NOT_A_FILE:
-                    msg = ZClientUploaderRespCode.NOT_A_FILE.getDescription();
-                    break;
-                case NO_PERMISSION:
-                    msg = ZClientUploaderRespCode.NO_PERMISSION.getDescription();
-                    break;
-                case MISSING_LIB_PATH:
-                case UPDATE_LINK_FAILED:
-                    msg = ZClientUploaderRespCode.UPDATE_LINK_FAILED.getDescription();
-                    break;
-                default:
-                    msg = ZClientUploaderRespCode.FAILED.getDescription();
+            case FILE_EXCEED_LIMIT:
+                msg = ZClientUploaderRespCode.FILE_EXCEED_LIMIT.getDescription();
+                break;
+            case NOT_A_FILE:
+                msg = ZClientUploaderRespCode.NOT_A_FILE.getDescription();
+                break;
+            case NO_PERMISSION:
+                sc = HttpServletResponse.SC_FORBIDDEN;
+                msg = ZClientUploaderRespCode.NO_PERMISSION.getDescription();
+                break;
+            case MISSING_LIB_PATH:
+            case UPDATE_LINK_FAILED:
+                msg = ZClientUploaderRespCode.UPDATE_LINK_FAILED.getDescription();
+                break;
+            default:
+                msg = ZClientUploaderRespCode.FAILED.getDescription();
             }
-            sendError(resp, e.getRespCode().getCode(), reqId, msg);
+            sendError(resp, sc, e.getRespCode().getCode(), reqId, msg);
         } catch (Exception e) {
             Log.clientUploader.error("Unexpected error", e);
-            sendError(resp,ZClientUploaderRespCode.FAILED.getCode(), reqId,
+            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ZClientUploaderRespCode.FAILED.getCode(),
+                    reqId,
                     ZClientUploaderRespCode.FAILED.getDescription());
         }
     }
@@ -127,7 +131,7 @@ public class ClientUploadHandler extends ExtensionHttpHandler {
     private boolean authenticate(AuthToken authToken, HttpServletResponse resp) throws IOException {
         if (authToken == null) {
             Log.clientUploader.warn("Auth failed");
-            sendError(resp, HttpServletResponse.SC_FORBIDDEN, HttpServletResponse.SC_FORBIDDEN, "Auth failed");
+            sendError(resp, HttpServletResponse.SC_FORBIDDEN, HttpServletResponse.SC_FORBIDDEN, "Auth failed", null);
             return false;
         }
         return true;
@@ -162,17 +166,17 @@ public class ClientUploadHandler extends ExtensionHttpHandler {
         return super.getPath() + "/" + HANDLER_PATH_NAME;
     }
 
-    private void sendError(HttpServletResponse resp, int sc, long respCode, String msg) throws IOException {
+    private void sendError(HttpServletResponse resp, int sc, long respCode, String msg, String requestId)
+            throws IOException {
         Log.clientUploader.error("Failed to process request: " + msg);
-        resp.sendError(sc, this.getResponseBody(respCode, null, msg));
-    }
-
-    private void sendError(HttpServletResponse resp, long respCode, String requestId, String msg) throws IOException {
-        Log.clientUploader.error("Failed to process request: " + msg);
-        resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write(getResponseBody(respCode, requestId, msg));
-        resp.getWriter().flush();
-        resp.getWriter().close();
+        if (sc == HttpServletResponse.SC_OK) {
+            resp.setStatus(sc);
+            resp.getWriter().write(getResponseBody(respCode, requestId, msg));
+            resp.getWriter().flush();
+            resp.getWriter().close();
+        } else {
+            resp.sendError(sc, this.getResponseBody(respCode, requestId, msg));
+        }
     }
 
     private void sendSuccess(HttpServletResponse resp, String requestId) throws IOException {

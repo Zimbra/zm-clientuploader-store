@@ -16,8 +16,6 @@
  */
 package com.zimbra.clientuploader;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Response code for client software uploade extension
@@ -38,7 +36,7 @@ public enum ZClientUploaderRespCode {
     MISSING_LIB_PATH (30000001, "Cannot find lib directory so cannot execute zmupdatedownload"),
     UPDATE_LINK_FAILED (30000002, "Failed to update links in downloads/index.html"),
 
-    NO_PERMISSION (40000001, "Have no permission to upload client software.");
+    NO_PERMISSION(40000001, "Permission denied");
 
     private long code;
     private String description;
@@ -62,12 +60,5 @@ public enum ZClientUploaderRespCode {
                 .append(", Description: ")
                 .append(description)
                 .toString();
-    }
-    
-    public JSONObject toJSONObject() throws JSONException {
-        JSONObject json = new JSONObject();
-        json.put("code", code);
-        json.put("description", description);
-        return json;
     }
 }
