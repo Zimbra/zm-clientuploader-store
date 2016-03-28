@@ -66,7 +66,6 @@ function ZaBulkDataImportXWizard(parent, entry) {
     this.initForm(ZaBulkProvision.getMyXModel(), this.getMyXForm(entry), null);
 
     this._helpURL = [ location.pathname, ZaUtil.HELP_URL, ZaBulkDataImportXWizard.helpURL, "?locid=", AjxEnv.DEFAULT_LOCALE ].join("");
-
 }
 ZaBulkDataImportXWizard.STEP_INDEX = 1;
 ZaBulkDataImportXWizard.STEP_INTRODUCTION = ZaBulkDataImportXWizard.STEP_INDEX++;
@@ -442,20 +441,12 @@ ZaBulkDataImportXWizard.prototype.goNext = function() {
 
         // 2. Upload the files
         try {
+            this._button[DwtWizardDialog.FINISH_BUTTON].setEnabled(false);
+            this._button[DwtWizardDialog.NEXT_BUTTON].setEnabled(false);
+            this._button[DwtWizardDialog.PREV_BUTTON].setEnabled(false);
+            this._button[DwtDialog.CANCEL_BUTTON].setEnabled(true);            
             var xmlUploadCallback = new AjxCallback(this, this._uploadCallback);
-            if (AjxEnv.supportsHTML5File) {
-                var uploader = new ZaUploader();
-                uploader.upload(ZaBulkDataImportXWizard.attachmentInputId, appContextPath + "/../service/upload?fmt=extended,raw", xmlUploadCallback);
-            } else {
-                this.setUploadManager(new AjxPost(this.getUploadFrameId()));
-                var um = this.getUploadManager();
-                window._uploadManager = um;
-                this._button[DwtWizardDialog.FINISH_BUTTON].setEnabled(false);
-                this._button[DwtWizardDialog.NEXT_BUTTON].setEnabled(false);
-                this._button[DwtWizardDialog.PREV_BUTTON].setEnabled(false);
-                this._button[DwtDialog.CANCEL_BUTTON].setEnabled(true);
-                um.execute(xmlUploadCallback, document.getElementById(ZaBulkDataImportXWizard.xmlUploadFormId));
-            }
+            ZaUploader.upload.call(this, xmlUploadCallback, [ZaBulkDataImportXWizard.attachmentInputId], ZaBulkDataImportXWizard.xmlUploadFormId);
         } catch (err) {
             this._app.getCurrentController().popupErrorDialog((err && err.msg) ? err.msg : com_zimbra_bulkprovision.error_no_bulk_file_specified);
         }
@@ -573,11 +564,11 @@ ZaBulkDataImportXWizard.prototype.goPrev = function() {
     this.goPage(prevStep);
 }
 
-ZaBulkDataImportXWizard.prototype._uploadCallback = function(status, attId) {
+ZaBulkDataImportXWizard.prototype._uploadCallback = function(status, uploadResults) {
     var cStep = this._containedObject[ZaModel.currentStep];
-    if (status == AjxPost.SC_OK) {
-        if (attId != null && attId.length > 0) {
-            this._containedObject[ZaBulkProvision.A_aid] = attId;
+    if(uploadResults && uploadResults[0] && status == AjxPost.SC_OK) {
+        if (uploadResults[0].aid != null && uploadResults[0].aid.length > 0) {
+            this._containedObject[ZaBulkProvision.A_aid] = uploadResults[0].aid;
         } else {
             this._app.getCurrentController().popupErrorDialog(com_zimbra_bulkprovision.error_upload_bulk_no_aid);
             return;

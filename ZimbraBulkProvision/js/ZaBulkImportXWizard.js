@@ -32,6 +32,7 @@ function ZaBulkImportXWizard(parent, entry) {
     ZaXWizardDialog.call(this, parent, null, com_zimbra_bulkprovision.BP_Wizard_title_new, w, (AjxEnv.isIE ? "330px" : "320px"), "ZaBulkImportXWizard");
 
     ZaBulkImportXWizard.xmlUploadFormId = Dwt.getNextId();
+    ZaBulkImportXWizard.attachmentInputId = Dwt.getNextId();
     this.stepChoices = [ {
         label : com_zimbra_bulkprovision.BP_Wizard_overview,
         value : ZaBulkImportXWizard.STEP_CHOOSE_ACTION
@@ -263,15 +264,7 @@ ZaBulkImportXWizard.prototype.goNext = function() {
             this._button[DwtWizardDialog.PREV_BUTTON].setEnabled(false);
             this._button[DwtDialog.CANCEL_BUTTON].setEnabled(true);
             var xmlUploadCallback = new AjxCallback(this, this._uploadCallback);
-            if(AjxEnv.supportsHTML5File) {
-                var uploader = new ZaUploader();
-                uploader.upload(ZaBulkImportXWizard.attachmentInputId, appContextPath + "/../service/upload?fmt=extended,raw",  xmlUploadCallback);
-            } else {
-                this.setUploadManager(new AjxPost(this.getUploadFrameId()));
-                var um = this.getUploadManager();
-                window._uploadManager = um;
-                um.execute(xmlUploadCallback, document.getElementById(ZaBulkImportXWizard.xmlUploadFormId));
-            }
+            ZaUploader.upload.call(this, xmlUploadCallback, [ZaBulkImportXWizard.attachmentInputId], ZaBulkImportXWizard.xmlUploadFormId);
         } catch (err) {
             this._button[DwtWizardDialog.FINISH_BUTTON].setEnabled(false);
             this._button[DwtWizardDialog.NEXT_BUTTON].setEnabled(true);
@@ -411,11 +404,11 @@ ZaBulkImportXWizard.prototype.previewCallback = function(params, resp) {
     }
 };
 
-ZaBulkImportXWizard.prototype._uploadCallback = function(status, attId) {
+ZaBulkImportXWizard.prototype._uploadCallback = function(status, uploadResults) {
     var cStep = this._containedObject[ZaModel.currentStep];
-    if (status == AjxPost.SC_OK) {
-        if (attId != null && attId.length > 0) {
-            this._containedObject[ZaBulkProvision.A_aid] = attId;
+    if(uploadResults && uploadResults[0] && status == AjxPost.SC_OK) {
+        if (uploadResults[0].aid != null && uploadResults[0].aid.length > 0) {
+            this._containedObject[ZaBulkProvision.A_aid] = uploadResults[0].aid;
         } else {
             ZaApp.getInstance().getCurrentController().popupErrorDialog(com_zimbra_bulkprovision.error_upload_bulk_no_aid);
             return;
@@ -664,7 +657,6 @@ ZaBulkImportXWizard.getFileName = function(fullPath) {
 ZaBulkImportXWizard.csvUploadFormId = Dwt.getNextId();
 
 ZaBulkImportXWizard.getUploadFormHtml = function(fileType) {
-    ZaBulkImportXWizard.attachmentInputId = Dwt.getNextId();
     var uri = appContextPath + "/../service/upload";
     var html = [];
     var idx = 0;
