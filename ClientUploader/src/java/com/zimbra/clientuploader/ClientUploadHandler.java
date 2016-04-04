@@ -89,7 +89,7 @@ public class ClientUploadHandler extends ExtensionHttpHandler {
             List<FileItem> items = upload.parseRequest(req);
 
             // look for csrf token in form fields if we did not find it in X-Zimbra-Csrf header
-            if (!csrfCheckComplete && !CsrfUtil.checkCsrfInMultipartFilleUpload(items, authToken)) {
+            if (!csrfCheckComplete && !CsrfUtil.checkCsrfInMultipartFileUpload(items, authToken)) {
                 FileUploadServlet.drainRequestStream(req);
                 throw new ZClientUploaderException(ZClientUploaderRespCode.NO_PERMISSION);
             }
