@@ -1,5 +1,6 @@
 package com.zimbra.qa.unittest;
 
+import static org.junit.Assert.*;
 import junit.framework.TestCase;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -29,7 +30,7 @@ import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.soap.JaxbUtil;
 
-public class TestClientUploader extends TestCase {
+public class TestClientUploader {
     private static String HANDLER_URL = "/service/extension/clientUploader/upload/";
     private static String FILE_NAME = "zco.exe";
     private static String RESP_STR = "window.parent._uploadManager.loaded";
