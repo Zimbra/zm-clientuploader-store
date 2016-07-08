@@ -7,6 +7,8 @@
   <property name="ext.name" value="com_zimbra_clientuploader"/>
   <property name="implementation.title" value="${ext.name}"/>
   <property name="jar.file" value="${ext.name}.jar"/>
+
+  <!-- This property is used by zimbra-jar target to create jar manifest -->
   <property name="${zimbra.extension.class}" value="com.zimbra.clientuploader.ZClientUploaderExt"/>
 
   <target name="build-init">
@@ -17,11 +19,11 @@
   </target>
 
   <target name="deploy" depends="jar">
-    <ant dir="${server.dir}" target="stop-webserver" inheritAll="false"/>
+    <!-- TODO: refactor dev deployment with Vagrant ant dir="${server.dir}" target="stop-webserver" inheritAll="false"/ -->
     <copy todir="${zimbra.home.dir}/lib/ext/${ext.name}">
       <fileset dir="${build.dir}" includes="${ext.name}.jar" />
     </copy>
-    <ant dir="${server.dir}" target="start-webserver" inheritAll="false"/>
+    <!-- ant dir="${server.dir}" target="start-webserver" inheritAll="false"/ -->
   </target>
 
   <target name="dist" depends="jar" description="Copies jar to dist dir">
