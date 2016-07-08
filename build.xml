@@ -4,9 +4,9 @@
 
   <property name="dist.lib.dir" location="${dist.dir}/lib"/>
   <property name="dist.lib.ext.dir" location="${dist.lib.dir}/ext"/>
-  <property name="implementation.title" value="com_zimbra_clientuploader"/>
-  <property name="jar.file" value="com_zimbra_clientuploader.jar"/>
-  <property name="jar.file" value="com_zimbra_clientuploader.jar"/>
+  <property name="ext.name" value="com_zimbra_clientuploader"/>
+  <property name="implementation.title" value="${ext.name}"/>
+  <property name="jar.file" value="${ext.name}.jar"/>
   <property name="${zimbra.extension.class}" value="com.zimbra.clientuploader.ZClientUploaderExt"/>
 
   <target name="build-init">
@@ -16,13 +16,7 @@
     <mkdir dir="${dist.lib.ext.dir}"/>
   </target>
 
-  <target name="deploy" description="Deploy zm-clientuploader-store">
-    <antcall target="deploy-server-extension">
-      <param name="ext.name" value="com_zimbra_bulkprovision" />
-    </antcall>
-  </target>
-
-  <target name="deploy-server-extension" depends="jar">
+  <target name="deploy" depends="jar">
     <ant dir="${server.dir}" target="stop-webserver" inheritAll="false"/>
     <copy todir="${zimbra.home.dir}/lib/ext/${ext.name}">
       <fileset dir="${build.dir}" includes="${ext.name}.jar" />
