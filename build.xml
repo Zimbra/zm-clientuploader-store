@@ -39,6 +39,11 @@
     </copy>
   </target>
 
-  <target name="jar" depends="compile,zimbra-jar" description="Creates the jar file" />
+   <target name="jar" depends="compile" description="Creates zm-clientuploader-store jar file">
+        <antcall target="zimbra-jar">
+            <param name="implementation.title" value="${ext.name}"/>
+            <param name="zimbra.extension.class" value="com.zimbra.clientuploader.ZClientUploaderExt"/>
+        </antcall>
+    </target>
     
 </project>
