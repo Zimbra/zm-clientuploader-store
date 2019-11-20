@@ -5,7 +5,7 @@
  <info organisation="zimbra" module="zm-clientuploader-store" status="integration">
  </info>
  <dependencies>
-  <dependency org="commons-fileupload" name="commons-fileupload" rev="1.2.2" />
+  <dependency org="commons-fileupload" name="commons-fileupload" rev="1.4" />
   <dependency org="org.apache.httpcomponents" name="httpclient" rev="${httpclient.version}"/>
   <dependency org="org.apache.httpcomponents" name="httpcore" rev="${httpclient.httpcore.version}"/>
   <dependency org="org.apache.httpcomponents" name="httpmime" rev="${httpclient.version}"/>
