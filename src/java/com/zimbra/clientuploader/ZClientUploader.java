@@ -58,8 +58,17 @@ public class ZClientUploader {
                 if (!item.isFormField()) {
                     String fileName = item.getName();
                     if (fileName != null && !fileName.isEmpty()) {
-                        item.write(new File(parent, fileName));
-                        count ++;
+                        File fileInstance = new File(parent, fileName);
+                        String canonicalPath = fileInstance.getCanonicalPath();
+                        Log.clientUploader.debug("file canonicalPath: %s", canonicalPath);
+                        Log.clientUploader.debug("parent canonicalPath: %s", parent.getCanonicalPath());
+                        // Check if we got some suspicious path then reject it
+                        if (canonicalPath != null && canonicalPath.startsWith(parent.getCanonicalPath())) {
+                            item.write(fileInstance);
+                            count++;
+                        } else {
+                            throw new ZClientUploaderException(ZClientUploaderRespCode.REPO_INVALID);
+                        }
                     }
                 }
             }
